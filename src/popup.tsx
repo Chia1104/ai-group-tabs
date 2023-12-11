@@ -14,13 +14,13 @@ const Popup = () => {
 
   const updateOpenAIKey = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     dispatch({
-      type: StorageKeys.OPEN_API_KEY,
+      type: StorageKeys.OPENAI_API_KEY,
       payload: e.target.value,
     });
   }, []);
 
   const getAllTabsInfo = async () => {
-    if (!state.OPEN_API_KEY || !state.GROUP_TYPES || !state.GROUP_TYPES) {
+    if (!state.OPENAI_API_KEY || !state.GROUP_TYPES || !state.GROUP_TYPES) {
       return;
     }
     try {
@@ -29,7 +29,7 @@ const Popup = () => {
       const result = await batchGroupTabs(
         tabs,
         state.GROUP_TYPES,
-        state.OPEN_API_KEY,
+        state.OPENAI_API_KEY,
       );
       chrome.runtime.sendMessage({ result });
     } catch (error) {
@@ -61,12 +61,12 @@ const Popup = () => {
           id="openai-key"
           type="password"
           onChange={updateOpenAIKey}
-          value={state.OPEN_API_KEY}
+          value={state.OPENAI_API_KEY}
           placeholder="Your OpenAI Key"
         />
       </div>
 
-      {!state.OPEN_API_KEY?.length && (
+      {!state.OPENAI_API_KEY?.length && (
         <div className="text-sm text-gray-500 mb-2">
           You can get your key from{" "}
           <a
@@ -154,7 +154,7 @@ const Popup = () => {
 
       <button
         disabled={
-          !state.OPEN_API_KEY || !state.GROUP_TYPES || !state.GROUP_TYPES
+          !state.OPENAI_API_KEY || !state.GROUP_TYPES || !state.GROUP_TYPES
         }
         className="inline-flex items-center rounded-md bg-primary/lg px-2.5 py-1.5 text-sm font-semibold 
         text-white shadow-sm hover:bg-primary focus-visible:outline cursor-pointer

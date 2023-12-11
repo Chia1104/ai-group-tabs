@@ -55,8 +55,8 @@ export enum StorageKeys {
    * @deprecated use the new StorageKeys for backwards compatibility,
    * currently only used for migration
    */
-  LEGACY_OPEN_API_KEY = "openai_key",
-  OPEN_API_KEY = "OPEN_API_KEY",
+  LEGACY_OPENAI_API_KEY = "openai_key",
+  OPENAI_API_KEY = "OPENAI_API_KEY",
   /**
    * @deprecated use the new StorageKeys for backwards compatibility,
    * currently only used for migration

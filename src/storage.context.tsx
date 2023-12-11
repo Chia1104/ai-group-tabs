@@ -14,14 +14,14 @@ import {
 } from "./utils";
 
 export interface Storages {
-  [StorageKeys.OPEN_API_KEY]: OpenAPIKey;
+  [StorageKeys.OPENAI_API_KEY]: OpenaiAPIKey;
   [StorageKeys.AUTO_GROUP]: AutoGroup;
   [StorageKeys.GROUP_TYPES]: GroupTypes;
 }
 
 export type Action =
   | {
-      type: StorageKeys.OPEN_API_KEY;
+      type: StorageKeys.OPENAI_API_KEY;
       payload: string;
     }
   | {
@@ -34,7 +34,7 @@ export type Action =
     };
 
 const initialState = {
-  [StorageKeys.OPEN_API_KEY]: "",
+  [StorageKeys.OPENAI_API_KEY]: "",
   [StorageKeys.AUTO_GROUP]: true,
   [StorageKeys.GROUP_TYPES]: DEFAULT_GROUP,
 } satisfies Storages;
@@ -50,10 +50,10 @@ const StorageContext = createContext<{
 const reducer = (state: Storages, action: Action) => {
   const { type, payload } = action;
   switch (type) {
-    case StorageKeys.OPEN_API_KEY: {
-      setStorage(StorageKeys.LEGACY_OPEN_API_KEY, payload);
-      setStorage(StorageKeys.OPEN_API_KEY, payload);
-      return { ...state, [StorageKeys.OPEN_API_KEY]: payload };
+    case StorageKeys.OPENAI_API_KEY: {
+      setStorage(StorageKeys.LEGACY_OPENAI_API_KEY, payload);
+      setStorage(StorageKeys.OPENAI_API_KEY, payload);
+      return { ...state, [StorageKeys.OPENAI_API_KEY]: payload };
     }
     case StorageKeys.AUTO_GROUP: {
       setStorage(StorageKeys.LEGACY_AUTO_GROUP, payload);
@@ -74,26 +74,26 @@ const StorageEffect = () => {
   const { dispatch } = useStorage();
   useEffect(() => {
     getMultipleStorage<{
-      [StorageKeys.OPEN_API_KEY]: OpenAPIKey;
-      [StorageKeys.LEGACY_OPEN_API_KEY]: OpenAPIKey;
+      [StorageKeys.OPENAI_API_KEY]: OpenaiAPIKey;
+      [StorageKeys.LEGACY_OPENAI_API_KEY]: OpenaiAPIKey;
       [StorageKeys.AUTO_GROUP]: AutoGroup;
       [StorageKeys.LEGACY_AUTO_GROUP]: AutoGroup;
       [StorageKeys.GROUP_TYPES]: GroupTypes;
       [StorageKeys.LEGACY_GROUP_TYPES]: GroupTypes;
     }>([
-      StorageKeys.OPEN_API_KEY,
-      StorageKeys.LEGACY_OPEN_API_KEY,
+      StorageKeys.OPENAI_API_KEY,
+      StorageKeys.LEGACY_OPENAI_API_KEY,
       StorageKeys.AUTO_GROUP,
       StorageKeys.LEGACY_AUTO_GROUP,
       StorageKeys.GROUP_TYPES,
       StorageKeys.LEGACY_GROUP_TYPES,
     ]).then((result) => {
       dispatch({
-        type: StorageKeys.OPEN_API_KEY,
+        type: StorageKeys.OPENAI_API_KEY,
         payload:
-          result[StorageKeys.OPEN_API_KEY] ??
-          result[StorageKeys.LEGACY_OPEN_API_KEY] ??
-          initialState[StorageKeys.OPEN_API_KEY],
+          result[StorageKeys.OPENAI_API_KEY] ??
+          result[StorageKeys.LEGACY_OPENAI_API_KEY] ??
+          initialState[StorageKeys.OPENAI_API_KEY],
       });
       dispatch({
         type: StorageKeys.GROUP_TYPES,
