@@ -1,48 +1,36 @@
-import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
+import React, { ChangeEvent, useCallback, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { LoadingSpinner } from "./components/LoadingSpinner";
 import { batchGroupTabs } from "./services";
-import { DEFAULT_GROUP, getStorage, setStorage } from "./utils";
-
+import { StorageKeys } from "./utils";
+import { StorageProvider, useStorage } from "./storage.context";
 import "./popup.css";
 import Input from "./components/Input";
 
 const Popup = () => {
-  const [openAIKey, setOpenAIKey] = useState<string | undefined>("");
-  const [types, setTypes] = useState<string[]>([]);
-  const [isOn, setIsOn] = useState<boolean | undefined>(true);
+  const { state, dispatch } = useStorage();
   const [newType, setNewType] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    getStorage<string>("openai_key").then(setOpenAIKey);
-    getStorage<boolean>("isOn").then(setIsOn);
-    getStorage<string[]>("types").then((types) => {
-      if (!types) {
-        setTypes(DEFAULT_GROUP);
-        setStorage<string[]>("types", DEFAULT_GROUP);
-        return;
-      }
-      setTypes(types);
+  const updateOpenAIKey = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    dispatch({
+      type: StorageKeys.OPEN_API_KEY,
+      payload: e.target.value,
     });
   }, []);
 
-  const updateOpenAIKey = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setOpenAIKey(e.target.value);
-  }, []);
-
-  const updateKeyInStorage = useCallback(() => {
-    setStorage("openai_key", openAIKey);
-  }, [openAIKey]);
-
   const getAllTabsInfo = async () => {
-    if (!openAIKey || !types || !types.length) {
+    if (!state.OPEN_API_KEY || !state.GROUP_TYPES || !state.GROUP_TYPES) {
       return;
     }
     try {
       setIsLoading(true);
       const tabs = await chrome.tabs.query({ currentWindow: true });
-      const result = await batchGroupTabs(tabs, types, openAIKey);
+      const result = await batchGroupTabs(
+        tabs,
+        state.GROUP_TYPES,
+        state.OPEN_API_KEY,
+      );
       chrome.runtime.sendMessage({ result });
     } catch (error) {
       // TODO show error message
@@ -53,9 +41,9 @@ const Popup = () => {
   };
 
   const disableGrouping = () => {
-    setIsOn((isOn) => {
-      setStorage("isOn", !isOn);
-      return !isOn;
+    dispatch({
+      type: StorageKeys.AUTO_GROUP,
+      payload: !state.AUTO_GROUP,
     });
   };
 
@@ -73,13 +61,12 @@ const Popup = () => {
           id="openai-key"
           type="password"
           onChange={updateOpenAIKey}
-          onBlur={updateKeyInStorage}
-          value={openAIKey}
+          value={state.OPEN_API_KEY}
           placeholder="Your OpenAI Key"
         />
       </div>
 
-      {!openAIKey?.length && (
+      {!state.OPEN_API_KEY?.length && (
         <div className="text-sm text-gray-500 mb-2">
           You can get your key from{" "}
           <a
@@ -96,15 +83,16 @@ const Popup = () => {
       <div className="flex flex-col gap-y-2 mb-2">
         <form
           onSubmit={(e) => {
-            if (!newType) {
+            if (!newType || !state.GROUP_TYPES) {
               return;
             }
-            const newTypes = [...types, newType];
+            const newTypes = [...state.GROUP_TYPES, newType];
             setNewType("");
-            setTypes(newTypes);
+            dispatch({
+              type: StorageKeys.GROUP_TYPES,
+              payload: newTypes,
+            });
             e.preventDefault();
-
-            setStorage<string[]>("types", newTypes);
           }}
         >
           <div className="flex items-center gap-x-2">
@@ -127,24 +115,35 @@ const Popup = () => {
           </div>
         </form>
 
-        {types?.map((type, idx) => (
+        {state.GROUP_TYPES?.map((type, idx) => (
           <div className="flex items-center gap-x-2" key={idx}>
             <Input
               placeholder="Group Type"
               value={type}
               onChange={(e) => {
-                const newTypes = [...types];
+                if (!state.GROUP_TYPES) {
+                  return;
+                }
+                const newTypes = [...state.GROUP_TYPES];
                 newTypes[idx] = e.target.value;
-                setTypes(newTypes);
+                dispatch({
+                  type: StorageKeys.GROUP_TYPES,
+                  payload: newTypes,
+                });
               }}
             />
 
             <button
               onClick={() => {
-                const newTypes = [...types];
+                if (!state.GROUP_TYPES) {
+                  return;
+                }
+                const newTypes = [...state.GROUP_TYPES];
                 newTypes.splice(idx, 1);
-                setTypes(newTypes);
-                setStorage<string[]>("types", newTypes);
+                dispatch({
+                  type: StorageKeys.GROUP_TYPES,
+                  payload: newTypes,
+                });
               }}
             >
               Delete
@@ -154,7 +153,9 @@ const Popup = () => {
       </div>
 
       <button
-        disabled={!openAIKey || !types || !types.length}
+        disabled={
+          !state.OPEN_API_KEY || !state.GROUP_TYPES || !state.GROUP_TYPES
+        }
         className="inline-flex items-center rounded-md bg-primary/lg px-2.5 py-1.5 text-sm font-semibold 
         text-white shadow-sm hover:bg-primary focus-visible:outline cursor-pointer
         focus-visible:outline-2 focus-visible:outline-offset-2"
@@ -169,7 +170,7 @@ const Popup = () => {
           <input
             id="switch"
             type="checkbox"
-            checked={isOn}
+            checked={state.AUTO_GROUP}
             className="peer sr-only"
             onClick={disableGrouping}
           />
@@ -188,6 +189,8 @@ const root = createRoot(document.getElementById("root")!);
 
 root.render(
   <React.StrictMode>
-    <Popup />
-  </React.StrictMode>
+    <StorageProvider>
+      <Popup />
+    </StorageProvider>
+  </React.StrictMode>,
 );

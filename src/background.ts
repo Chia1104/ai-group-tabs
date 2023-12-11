@@ -70,7 +70,7 @@ async function processTabAndGroup(tab: chrome.tabs.Tab, types: any) {
   // Query all groups and update tabMap accordingly
   const allGroups = await chrome.tabGroups.query({});
   allGroups.forEach(
-    (group) => group.title && tabMap.set(group.title, group.id)
+    (group) => group.title && tabMap.set(group.title, group.id),
   );
 
   // Check if a group already exists for this type
@@ -109,7 +109,7 @@ async function handleNewTab(tab: chrome.tabs.Tab) {
 async function handleTabUpdate(
   tabId: number,
   changeInfo: chrome.tabs.TabChangeInfo,
-  tab: chrome.tabs.Tab
+  tab: chrome.tabs.Tab,
 ) {
   const enable = await getStorage<boolean>("isOn");
   const window = await chrome.windows.get(tab.windowId);

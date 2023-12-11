@@ -8,7 +8,7 @@ interface TabGroup {
 export async function batchGroupTabs(
   tabs: chrome.tabs.Tab[],
   types: string[],
-  openAIKey: string
+  openAIKey: string,
 ) {
   const tabInfoList = tabs.map((tab) => {
     return {
@@ -52,7 +52,7 @@ export async function batchGroupTabs(
                 content: `Based on the URL: "${tab.url}" and title: "${
                   tab.title
                 }", classify the browser tab type as one of the following: ${types.join(
-                  ", "
+                  ", ",
                 )}. Respond with only the classification keyword from the list.`,
               },
             ],
@@ -66,7 +66,7 @@ export async function batchGroupTabs(
         const index = types.indexOf(type);
         if (index === -1) return;
         result[index].tabIds.push(tab.id);
-      })
+      }),
     );
     return result;
   } catch (error) {
@@ -78,7 +78,7 @@ export async function batchGroupTabs(
 export async function handleOneTab(
   tab: chrome.tabs.Tab,
   types: string[],
-  openAIKey: string
+  openAIKey: string,
 ) {
   try {
     const model = (await getStorage("model")) || "gpt-3.5-turbo";
@@ -104,7 +104,7 @@ export async function handleOneTab(
             content: `Based on the URL: "${tab.url}" and title: "${
               tab.title
             }", classify the browser tab type as one of the following: ${types.join(
-              ", "
+              ", ",
             )}. Respond with only the classification keyword from the list.`,
           },
         ],
