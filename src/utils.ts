@@ -48,7 +48,7 @@ export const DEFAULT_GROUP = [
 ];
 
 /**
- * @todo Remove unnecessary keys
+ * @todo Remove unnecessary keys, refactor option page and background service
  */
 export enum StorageKeys {
   /**

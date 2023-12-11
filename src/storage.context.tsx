@@ -1,3 +1,7 @@
+/**
+ * @todo refactor option page and background service
+ */
+
 import {
   createContext,
   useContext,
